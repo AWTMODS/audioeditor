@@ -10,7 +10,7 @@ ffmpeg.setFfmpegPath(ffmpegPath);
 ffmpeg.setFfprobePath(ffprobePath);
 
 // Replace with your Telegram bot token
-const TOKEN = '7603494053:AAHhpqQKLItdNFPoOGI-oq2ZMsDGfQ0-KrM';
+const TOKEN = '8102710935:AAFmP5c08v4KBCu1XVTKEvs_OtXUQXM_HB8';
 const ADMIN_ID = '1343548529'; // Replace with your Telegram admin ID
 const CHANNEL_USERNAME = '@awt_bots'; // Replace with your channel username
 const DB_CHANNEL_ID = '@awtbotsdb'; // Replace with the database channel ID
