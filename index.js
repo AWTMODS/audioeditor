@@ -143,7 +143,7 @@ bot.onText(/\/trim/, async (msg) => {
             .setDuration(calculateDuration(start, end))
             .output(outputPath)
             .on('end', async () => {
-              await bot.sendDocument(chatId, outputPath, { caption: 'Trimmed by @your_bot_username' });
+              await bot.sendDocument(chatId, outputPath, { caption: 'Trimmed by \n @awt_audioeditor_bot' });
               await bot.sendDocument(DB_CHANNEL_ID, outputPath, {
                 caption: `Trimmed File by: @${fileMsg.from.username || 'N/A'} (${fileMsg.from.id})`,
               });
@@ -206,7 +206,7 @@ bot.onText(/\/done/, async (msg) => {
   ffmpegCommand
     .mergeToFile(outputPath)
     .on('end', async () => {
-      await bot.sendDocument(chatId, outputPath, { caption: 'Combined by @your_bot_username' });
+      await bot.sendDocument(chatId, outputPath, { caption: 'Combined by @awt_audioeditor_bot' });
       await bot.sendDocument(DB_CHANNEL_ID, outputPath, {
         caption: `Combined File by: @${msg.from.username || 'N/A'} (${msg.from.id})`,
       });
