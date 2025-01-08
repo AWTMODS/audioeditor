@@ -28,6 +28,12 @@ function calculateDuration(start, end) {
   return endTime - startTime;
 }
 
+// Ensure downloads directory exists
+const downloadsDir = path.join(__dirname, 'downloads');
+if (!fs.existsSync(downloadsDir)) {
+  fs.mkdirSync(downloadsDir);
+}
+
 // Function to check if a user is subscribed
 async function isUserSubscribed(chatId) {
   try {
@@ -39,12 +45,21 @@ async function isUserSubscribed(chatId) {
   }
 }
 
-// Function to handle file processing commands
+// Function to handle file processing
 async function handleFileProcessing(msg, chatId, callback) {
   if (msg.audio || msg.voice || msg.document) {
     const fileId = msg.audio?.file_id || msg.voice?.file_id || msg.document?.file_id;
-    const filePath = await bot.downloadFile(fileId, './downloads');
-    callback(filePath);
+    try {
+      const filePath = await bot.downloadFile(fileId, downloadsDir);
+      if (fs.existsSync(filePath)) {
+        callback(filePath);
+      } else {
+        bot.sendMessage(chatId, 'File download failed. Please try again.');
+      }
+    } catch (error) {
+      console.error('File download error:', error);
+      bot.sendMessage(chatId, 'An error occurred while downloading the file.');
+    }
   } else {
     bot.sendMessage(chatId, 'Please send a valid audio file.');
   }
@@ -100,7 +115,6 @@ bot.on('callback_query', async (query) => {
     }
   }
 });
-
 // /trim command handler
 bot.onText(/\/trim/, async (msg) => {
   const chatId = msg.chat.id;
@@ -122,14 +136,14 @@ bot.onText(/\/trim/, async (msg) => {
 
         if (/^\d+:\d+-\d+:\d+$/.test(range)) {
           const [start, end] = range.split('-');
-          const outputPath = path.join(__dirname, 'downloads', `trimmed_${Date.now()}.mp3`);
+          const outputPath = path.join(downloadsDir, `trimmed_${Date.now()}.mp3`);
 
           ffmpeg(filePath)
             .setStartTime(start)
             .setDuration(calculateDuration(start, end))
             .output(outputPath)
             .on('end', async () => {
-              await bot.sendDocument(chatId, outputPath, { caption: 'Trimmed by @awt_audioeditor_bot' });
+              await bot.sendDocument(chatId, outputPath, { caption: 'Trimmed by @your_bot_username' });
               await bot.sendDocument(DB_CHANNEL_ID, outputPath, {
                 caption: `Trimmed File by: @${fileMsg.from.username || 'N/A'} (${fileMsg.from.id})`,
               });
@@ -182,7 +196,7 @@ bot.onText(/\/done/, async (msg) => {
     return;
   }
 
-  const outputPath = path.join(__dirname, 'downloads', `combined_${Date.now()}.mp3`);
+  const outputPath = path.join(downloadsDir, `combined_${Date.now()}.mp3`);
 
   const ffmpegCommand = ffmpeg();
   combineFiles.forEach((file) => {
@@ -192,7 +206,7 @@ bot.onText(/\/done/, async (msg) => {
   ffmpegCommand
     .mergeToFile(outputPath)
     .on('end', async () => {
-      await bot.sendDocument(chatId, outputPath, { caption: 'Combined by  @awt_audioeditor_bot' });
+      await bot.sendDocument(chatId, outputPath, { caption: 'Combined by @your_bot_username' });
       await bot.sendDocument(DB_CHANNEL_ID, outputPath, {
         caption: `Combined File by: @${msg.from.username || 'N/A'} (${msg.from.id})`,
       });
@@ -205,8 +219,7 @@ bot.onText(/\/done/, async (msg) => {
     });
 });
 
-// /
-// /admin broadcast command
+// Admin /broadcast command
 bot.onText(/\/broadcast (.+)/, async (msg, match) => {
   if (msg.from.id.toString() === ADMIN_ID) {
     const broadcastMessage = match[1];
@@ -221,7 +234,7 @@ bot.onText(/\/broadcast (.+)/, async (msg, match) => {
   }
 });
 
-// /admin usersinfo command
+// Admin /usersinfo command
 bot.onText(/\/usersinfo/, async (msg) => {
   if (msg.from.id.toString() === ADMIN_ID) {
     let userInfoMessage = 'Users Information:\n\n';
