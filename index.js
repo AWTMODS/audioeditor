@@ -206,7 +206,7 @@ bot.onText(/\/done/, async (msg) => {
   ffmpegCommand
     .mergeToFile(outputPath)
     .on('end', async () => {
-      await bot.sendDocument(chatId, outputPath, { caption: 'Combined by @awt_audioeditor_bot' });
+      await bot.sendDocument(chatId, outputPath, { caption: 'Combined by \n @awt_audioeditor_bot' });
       await bot.sendDocument(DB_CHANNEL_ID, outputPath, {
         caption: `Combined File by: @${msg.from.username || 'N/A'} (${msg.from.id})`,
       });
